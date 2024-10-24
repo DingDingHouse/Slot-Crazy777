@@ -51,19 +51,10 @@ pipeline {
                         hostname
                         git clean -fd
                         git stash --include-untracked
-                        git checkout main 
-                        git pull origin main
-                        git rm -r -f Builds 
-                        git add .
-                        git commit -m "delete old Builds"
-                        git push origin main
-
-                        git checkout main
-                        git checkout develop -- Builds
+                        git checkout develop
                         git add -f Builds
-                        git commit -m "adding new Builds"
-                        git pull
-                        git push origin main
+                        git commit -m "Add Builds"
+                        git push origin develop
                         '''
                     }
                 }
