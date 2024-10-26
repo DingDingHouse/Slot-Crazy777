@@ -1,5 +1,5 @@
 def PROJECT_NAME = "Slot-Crazy777"
-def UNITY_VERSION = "2022.3.48f1"
+def UNITY_VERSION = "2022.3.51f1"
 def UNITY_INSTALLATION = "C:\\Program Files\\Unity\\Hub\\Editor\\${UNITY_VERSION}\\Editor\\Unity.exe"
 def REPO_URL = "git@github.com:DingDingHouse/Slot-Crazy777.git"
 
@@ -11,7 +11,7 @@ pipeline {
     }
 
     environment {
-        PROJECT_PATH = "D:\\Slot-Crazy777"
+        PROJECT_PATH = "C:\\Games\\Slot-Crazy777"
         S3_BUCKET = "crazy777bucket"
     }
 
@@ -19,18 +19,22 @@ pipeline {
         stage('Checkout') {
             steps {
                 script {
-                    bat '''
-                    cd /d D:\\
-                    git config --global http.postBuffer 3221225472
-                    git clone git@github.com:DingDingHouse/Slot-Crazy777.git D:\\Slot-Crazy777 || echo "Repository already exists, pulling latest changes."
-                    cd Slot-Crazy777
-                    git fetch --all
-                    git reset --hard origin/develop
-                    git checkout develop
-                    '''
+                    dir("${PROJECT_PATH}") {
+                        bat '''
+                        hostname
+                        git config --global http.postBuffer 3221225472
+                        git clone git@github.com:DingDingHouse/Slot-Crazy777.git C:\\Games\\Slot-Crazy777
+                        cd C:\\Games\\Slot-Crazy777
+                        git fetch --all
+                        git reset --hard origin/develop
+                        git checkout develop
+                        )
+                        '''
+                    }
                 }
             }
         }
+        
         stage('Build WebGL') {
             steps {
                 script {
@@ -49,11 +53,13 @@ pipeline {
                     dir("${PROJECT_PATH}") {
                         bat '''
                         hostname
+                        whoami
+                        git config --global user.email "prathamesh@underpinservices.com"
+                        git config --global user.name "Prathm25"
                         git clean -fd
-                        git stash --include-untracked
                         git checkout develop
                         git add -f Builds
-                        git commit -m "Add Builds"
+                        git commit -m "Add new Builds" || echo "No changes to commit"
                         git push origin develop
                         '''
                     }
@@ -83,9 +89,6 @@ pipeline {
                         
                         REM Move index.html to the root for S3 hosting
                         aws s3 cp "Builds/WebGL/index.html" s3://%S3_BUCKET%/index.html --acl public-read --content-type "text/html"
-                        
-                        REM Optional: Set S3 bucket for static web hosting
-                        aws s3 website s3://%S3_BUCKET%/ --index-document index.html --error-document index.html
                         '''
                     }
                 }
@@ -93,4 +96,3 @@ pipeline {
         }
     }
 }
-
