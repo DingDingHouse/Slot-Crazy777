@@ -51,7 +51,7 @@ pipeline {
                     dir("${PROJECT_PATH}") {
                         bat '''
                         hostname
-                        git add Builds
+                        git add -f Builds
                         git commit -m "new build"
                         git push origin develop
                         git stash -u
