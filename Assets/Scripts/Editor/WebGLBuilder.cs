@@ -2,55 +2,57 @@ using UnityEditor;
 using UnityEngine;
 using System.IO;
 using System.Linq;
-using System.IO.Compression;
 
-public class BuildScript
+namespace MyBuilder
 {
-    public static void BuildGame()
+    public class WebGLBuilder
     {
-        string buildPath = "Builds/Linux";
-        CreateDirectory(buildPath);
-
-        BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions
+        [MenuItem("Build/Build MyWebGL")]
+        public static void Build()
         {
-            scenes = GetEnabledScenes(),
-            locationPathName = Path.Combine(buildPath, "YourGameName.x86_64"),
-            target = BuildTarget.StandaloneLinux64,
-            options = BuildOptions.None
-        };
+            // Set up the build path
+            string buildPath = "Builds/WebGL";
+            CreateDirectory(buildPath);
 
-        // Start the build process
-        BuildPipeline.BuildPlayer(buildPlayerOptions);
-        Debug.Log("Build complete!");
+            // Gather all enabled scenes
+            string[] scenes = GetEnabledScenes();
+            
+            if (scenes.Length == 0)
+            {
+                Debug.LogError("No scenes found in build settings. Please ensure scenes are added to EditorBuildSettings.");
+                return;
+            }
 
-        // Optional: Zip the build directory
-        ZipBuild(buildPath);
-    }
+            // Define build options
+            BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions
+            {
+                scenes = scenes,
+                locationPathName = buildPath,
+                target = BuildTarget.WebGL,
+                options = BuildOptions.None
+            };
 
-    private static string[] GetEnabledScenes()
-    {
-        return EditorBuildSettings.scenes
-            .Where(scene => scene.enabled)
-            .Select(scene => scene.path)
-            .ToArray();
-    }
-
-    private static void CreateDirectory(string path)
-    {
-        if (!Directory.Exists(path))
-        {
-            Directory.CreateDirectory(path);
+            // Start the build process
+            BuildPipeline.BuildPlayer(buildPlayerOptions);
+            Debug.Log("WebGL Build complete!");
         }
-    }
 
-    private static void ZipBuild(string buildPath)
-    {
-        string zipPath = buildPath + ".zip";
-        if (File.Exists(zipPath))
+        private static string[] GetEnabledScenes()
         {
-            File.Delete(zipPath);
+            // Retrieves enabled scenes from the build settings
+            return EditorBuildSettings.scenes
+                .Where(scene => scene.enabled)
+                .Select(scene => scene.path)
+                .ToArray();
         }
-        ZipFile.CreateFromDirectory(buildPath, zipPath);
-        Debug.Log($"Build zipped at {zipPath}");
+
+        private static void CreateDirectory(string path)
+        {
+            // Ensures the build directory exists
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+        }
     }
 }
